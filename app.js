@@ -18,6 +18,7 @@ const PuppetShowApp = () => {
     const [currentDialogue, setCurrentDialogue] = useState(null);
     const [speakingCharacter, setSpeakingCharacter] = useState(null);
     const [showCharacterModal, setShowCharacterModal] = useState(false);
+    const [savedDialogue, setSavedDialogue] = useState([]); // Added for storing generated dialogue
     
     const audioRef = useRef(null);
     const storyNameRef = useRef('');
@@ -119,6 +120,7 @@ const PuppetShowApp = () => {
                 throw new Error("Failed to parse dialogue");
             }
             
+            setSavedDialogue(dialogueLines); // Save generated dialogue
             await playDialogue(dialogueLines);
             
         } catch (error) {
@@ -187,6 +189,21 @@ const PuppetShowApp = () => {
         setSpeakingCharacter(null);
         setCurrentDialogue(null);
         setLoading(false);
+    };
+
+    const replayDialogue = () => {
+        if (savedDialogue.length === 0) {
+            alert('No dialogue to play. Generate dialogue first!');
+            return;
+        }
+        
+        if (!curtainsOpen) {
+            setCurtainsOpen(true);
+            // Give time for curtains to open
+            setTimeout(() => playDialogue(savedDialogue), config.curtainSpeed);
+        } else {
+            playDialogue(savedDialogue);
+        }
     };
 
     const saveStory = async () => {
@@ -333,6 +350,9 @@ const PuppetShowApp = () => {
                     <button onClick={handleGenerateDialogue} disabled={loading || characters.length < 2}>
                         Generate Dialogue
                     </button>
+                    <button onClick={replayDialogue} disabled={loading || savedDialogue.length === 0}>
+                        Play Story
+                    </button>
                     <button onClick={saveStory}>
                         Save Story
                     </button>
@@ -417,4 +437,3 @@ const PuppetShowApp = () => {
 };
 
 ReactDOM.render(<PuppetShowApp />, document.getElementById('app'));
-
